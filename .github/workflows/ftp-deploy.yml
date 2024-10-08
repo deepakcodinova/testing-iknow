@@ -37,15 +37,17 @@ jobs:
 
     - name: Set Version Type from Branch Name
       run: |
-        BRANCH_NAME="${GITHUB_REF#refs/heads/}" # Extract the branch name
-        if [[ "$BRANCH_NAME" == major/* ]]; then
-          echo "VERSION_TYPE=major" >> $GITHUB_ENV
-        elif [[ "$BRANCH_NAME" == minor/* ]]; then
-          echo "VERSION_TYPE=minor" >> $GITHUB_ENV
-        elif [[ "$BRANCH_NAME" == patch/* ]]; then
-          echo "VERSION_TYPE=patch" >> $GITHUB_ENV
-        else
-          echo "VERSION_TYPE=${{ github.event.inputs.version_type || 'patch' }}" >> $GITHUB_ENV
+          set -euxo pipefail  # Enable better error handling
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}" # Extract the branch name
+          if [[ "$BRANCH_NAME" == major/* ]]; then
+            echo "VERSION_TYPE=major" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" == minor/* ]]; then
+            echo "VERSION_TYPE=minor" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" == patch/* ]]; then
+            echo "VERSION_TYPE=patch" >> $GITHUB_ENV
+          else
+            echo "VERSION_TYPE=patch" >> $GITHUB_ENV
+      
 
     - name: Run Command Based on Version Type
       run: |
