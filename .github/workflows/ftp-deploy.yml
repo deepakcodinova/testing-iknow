@@ -1,0 +1,64 @@
+name: Content Part Deploy
+
+on:
+  push:
+    branches: [ dev, staging, prod, 'major:*', 'minor:*', 'patch:*' ]  # Include colon in branch patterns
+
+  workflow_dispatch:
+      inputs:
+        version_type:
+          description: "Choose version bump type: patch, minor, or major"
+          required: false
+          default: "patch"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+      
+    - name: NPM Install
+      run: npm install
+
+    - name: RUN Unit Tests
+      run: npm run test:unit
+
+
+    - name: Set Version Type from Branch Name
+      run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}" # Extract the branch name
+          if [[ "$BRANCH_NAME" == major/* ]]; then
+            echo "VERSION_TYPE=major" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" == minor/* ]]; then
+            echo "VERSION_TYPE=minor" >> $GITHUB_ENV
+          elif [[ "$BRANCH_NAME" == patch/* ]]; then
+            echo "VERSION_TYPE=patch" >> $GITHUB_ENV
+          else
+            echo "VERSION_TYPE=${{ github.event.inputs.version_type || 'patch' }}" >> $GITHUB_ENV
+          fi
+
+    - name: Run Command Based on Version Type
+      run: |
+          if [[ "$VERSION_TYPE" == "major" ]]; then
+            npm run generate:major
+          elif [[ "$VERSION_TYPE" == "minor" ]]; then
+            npm run generate:minor       
+          else
+            npm run generate:patch
+          fi
+
+    
+
+
+    
