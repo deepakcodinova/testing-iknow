@@ -2,7 +2,7 @@ name: Content Part Deploy
 
 on:
   push:
-    branches: [ dev, staging, prod, 'major:*', 'minor:*', 'patch:*' ]  # Include colon in branch patterns
+    branches: [ dev, staging, prod, 'major:*', 'minor:*', 'patch:*' ]
 
   workflow_dispatch:
     inputs:
@@ -18,10 +18,12 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch all history for all branches and tags
+    
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
@@ -35,21 +37,24 @@ jobs:
         git config --global user.email "deepak.kushwaha@codinova.com"
         git config --global user.name "deepakcodinova"
 
-    - name: Set Version Type from Branch Name
+    - name: Set Version Type
       run: |
-          set -euxo pipefail  # Enable better error handling
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}" # Extract the branch name
-          if [[ "$BRANCH_NAME" == major/* ]]; then
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION_TYPE=${{ github.event.inputs.version_type }}" >> $GITHUB_ENV
+        else
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          if [[ "$BRANCH_NAME" == major:* ]]; then
             echo "VERSION_TYPE=major" >> $GITHUB_ENV
-          elif [[ "$BRANCH_NAME" == minor/* ]]; then
+          elif [[ "$BRANCH_NAME" == minor:* ]]; then
             echo "VERSION_TYPE=minor" >> $GITHUB_ENV
-          elif [[ "$BRANCH_NAME" == patch/* ]]; then
+          elif [[ "$BRANCH_NAME" == patch:* ]]; then
             echo "VERSION_TYPE=patch" >> $GITHUB_ENV
           else
             echo "VERSION_TYPE=patch" >> $GITHUB_ENV
-      
+          fi
+        fi
 
-    - name: Run Command Based on Version Type
+    - name: Run Version Update
       run: |
         if [[ "$VERSION_TYPE" == "major" ]]; then
           npm run generate:major
@@ -57,3 +62,22 @@ jobs:
           npm run generate:minor       
         else
           npm run generate:patch
+        fi
+
+    - name: Push changes
+      run: |
+        git push origin HEAD:${{ github.ref }}
+
+    # Add your deployment steps here
+    # For example:
+    # - name: Deploy to Dev
+    #   if: github.ref == 'refs/heads/dev'
+    #   run: npm run deploy:dev
+    
+    # - name: Deploy to Staging
+    #   if: github.ref == 'refs/heads/staging'
+    #   run: npm run deploy:staging
+    
+    # - name: Deploy to Production
+    #   if: github.ref == 'refs/heads/prod'
+    #   run: npm run deploy:prod
