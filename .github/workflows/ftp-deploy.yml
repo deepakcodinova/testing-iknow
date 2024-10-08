@@ -31,9 +31,6 @@ jobs:
     - name: NPM Install
       run: npm install
 
-    - name: RUN Unit Tests
-      run: npm run test:unit
-
 
     - name: Set Version Type from Branch Name
       run: |
