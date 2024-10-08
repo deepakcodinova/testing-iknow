@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:major": "git add . && git commit -m \"Pre-version commit\" || true && npm version major",
+    "generate:minor": "git add . && git commit -m \"Pre-version commit\" || true && npm version minor",
+    "generate:patch": "git add . && git commit -m \"Pre-version commit\" || true && npm version patch",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
