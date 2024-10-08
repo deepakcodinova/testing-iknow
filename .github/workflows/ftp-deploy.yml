@@ -39,9 +39,6 @@ jobs:
 
     - name: Set Version Type
       run: |
-        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          echo "VERSION_TYPE=${{ github.event.inputs.version_type }}" >> $GITHUB_ENV
-        else
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           if [[ "$BRANCH_NAME" == major:* ]]; then
             echo "VERSION_TYPE=major" >> $GITHUB_ENV
@@ -52,7 +49,6 @@ jobs:
           else
             echo "VERSION_TYPE=patch" >> $GITHUB_ENV
           fi
-        fi
 
     - name: Run Version Update
       run: |
