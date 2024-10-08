@@ -40,11 +40,11 @@ jobs:
     - name: Set Version Type
       run: |
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          if [[ "$BRANCH_NAME" == major:* ]]; then
+          if [[ "$BRANCH_NAME" == major/* ]]; then
             echo "VERSION_TYPE=major" >> $GITHUB_ENV
-          elif [[ "$BRANCH_NAME" == minor:* ]]; then
+          elif [[ "$BRANCH_NAME" == minor/* ]]; then
             echo "VERSION_TYPE=minor" >> $GITHUB_ENV
-          elif [[ "$BRANCH_NAME" == patch:* ]]; then
+          elif [[ "$BRANCH_NAME" == patch/* ]]; then
             echo "VERSION_TYPE=patch" >> $GITHUB_ENV
           else
             echo "VERSION_TYPE=patch" >> $GITHUB_ENV
